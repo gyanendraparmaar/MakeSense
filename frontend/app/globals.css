@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0b0c0f;
+  --panel: #111318;
+  --panel-2: #151821;
+  --border: #232734;
+  --text: #e7eaf0;
+  --text-dim: #9aa3b2;
+  --accent: #7c9cff;
+  --accent-dim: #3b4a7a;
+  --danger: #ff6b6b;
+}
+
+html, body {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* TipTap editor prose */
+.ProseMirror {
+  min-height: 100%;
+  outline: none;
+  line-height: 1.6;
+  font-size: 16px;
+  color: var(--text);
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-dim);
+  pointer-events: none;
+  height: 0;
+}
+.ProseMirror ul, .ProseMirror ol {
+  padding-left: 1.25rem;
+}
+.ProseMirror h1 { font-size: 1.75rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+.ProseMirror h2 { font-size: 1.35rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+.ProseMirror code {
+  background: #1b1f2b;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: JetBrains Mono, ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+/* Scrollbars (subtle, dark) */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #1d2230; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #2a3142; }

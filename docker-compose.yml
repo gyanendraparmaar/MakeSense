@@ -1,0 +1,25 @@
+# Optional: one-command local dev with the backend in a container.
+# Most of the time you'll run `go run` directly, but this is handy when you
+# want to test the exact container image that deploys to Cloud Run.
+#
+# Usage:
+#   docker compose up --build
+#   curl http://localhost:8080/health
+
+services:
+  backend:
+    build: ./backend
+    container_name: makesense-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
+      - DB_PATH=/data/makesense.db
+    volumes:
+      - makesense_data:/data
+    restart: unless-stopped
+
+volumes:
+  makesense_data:
