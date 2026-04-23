@@ -16,8 +16,9 @@ import (
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"ok":    true,
-		"model": s.cfg.GeminiModel,
+		"ok":       true,
+		"provider": s.cfg.LLMProvider,
+		"model":    s.cfg.LLMModel,
 	})
 }
 

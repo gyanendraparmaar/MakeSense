@@ -3,10 +3,15 @@
 Recommended pairing for v1:
 
 - **Frontend:** Vercel (free Hobby tier, zero-config for Next.js)
-- **Backend:** Google Cloud Run (generous free tier, scale-to-zero, natural fit with Gemini)
+- **Backend:** Google Cloud Run (generous free tier, scale-to-zero)
+- **LLM:** Groq (default, free + fast) or Gemini (free on Google AI Studio)
 - **Database:** SQLite file on Cloud Run — fine for early solo usage. Move to Turso or Cloud SQL when you have real users.
 
 Below are step-by-step instructions, plus two alternatives.
+
+> **Tip:** the backend is provider-agnostic. Set `LLM_PROVIDER` to `groq`,
+> `gemini`, `openai`, `openrouter`, `ollama` or `openai-compatible` at deploy
+> time; the matching `*_API_KEY` env var is the only other thing you need.
 
 ---
 
@@ -42,12 +47,16 @@ gcloud run deploy makesense \
   --image gcr.io/$PROJECT_ID/makesense:latest \
   --region asia-south1 \
   --allow-unauthenticated \
-  --set-env-vars "GEMINI_API_KEY=YOUR_KEY,GEMINI_MODEL=gemini-2.0-flash,ALLOWED_ORIGIN=https://your-frontend.vercel.app" \
+  --set-env-vars "LLM_PROVIDER=groq,GROQ_API_KEY=YOUR_KEY,ALLOWED_ORIGIN=https://your-frontend.vercel.app" \
   --memory 256Mi \
   --cpu 1 \
   --min-instances 0 \
   --max-instances 3
 ```
+
+Swap `LLM_PROVIDER=groq` + `GROQ_API_KEY` for `LLM_PROVIDER=gemini` +
+`GEMINI_API_KEY` (or any other provider — see `README.md`) if you'd rather run
+on a different model. The binary picks the right client at startup.
 
 Cloud Run will print a URL like `https://makesense-abc123-el.a.run.app`. Save it — the frontend needs it.
 
@@ -100,7 +109,7 @@ fly launch --no-deploy     # answer prompts; say NO to Postgres for now
 fly volumes create makesense_data --region bom --size 1
 
 # Edit fly.toml to mount it at /data and set DB_PATH=/data/makesense.db
-fly secrets set GEMINI_API_KEY=YOUR_KEY ALLOWED_ORIGIN=https://your-frontend.vercel.app
+fly secrets set LLM_PROVIDER=groq GROQ_API_KEY=YOUR_KEY ALLOWED_ORIGIN=https://your-frontend.vercel.app
 
 fly deploy
 ```
@@ -117,7 +126,7 @@ Render has a genuinely free web service tier (cold starts after 15 min idle, whi
 2. Go to https://dashboard.render.com → New → Web Service → connect repo.
 3. Root: `backend`, Dockerfile: `Dockerfile`.
 4. Plan: Free.
-5. Add env vars: `GEMINI_API_KEY`, `ALLOWED_ORIGIN`.
+5. Add env vars: `LLM_PROVIDER`, the matching `*_API_KEY` (e.g. `GROQ_API_KEY`), and `ALLOWED_ORIGIN`.
 6. Deploy.
 
 Render's persistent disk add-on is paid, so with the free tier your SQLite file is lost on redeploy — same caveat as Cloud Run. Turso solves this.

@@ -34,6 +34,9 @@ func NewGeminiClient(apiKey, model string) *GeminiClient {
 	}
 }
 
+// ModelName satisfies the JSONGenerator interface.
+func (c *GeminiClient) ModelName() string { return c.Model }
+
 // --- Request/response types --------------------------------------------------
 
 type genReq struct {

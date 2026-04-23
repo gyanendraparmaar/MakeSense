@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+// JSONGenerator is the minimal contract the pipeline needs from an LLM backend.
+// Any provider (Gemini, Groq, OpenAI, Ollama, …) that can take a system +
+// user prompt and return a JSON object conforming to a schema implements this.
+type JSONGenerator interface {
+	GenerateJSON(ctx context.Context, system, user string, schema json.RawMessage, temperature float64) (json.RawMessage, error)
+	ModelName() string
+}
+
 // Pipeline orchestrates classification + specialist analysis.
 //
 //	raw text ──► classifier ──► {expenses | todo | generic}
@@ -15,11 +23,11 @@ import (
 //	                 ▼
 //	          specialist analyzer ──► structured JSON
 type Pipeline struct {
-	gem *GeminiClient
+	gen JSONGenerator
 }
 
-func NewPipeline(gem *GeminiClient) *Pipeline {
-	return &Pipeline{gem: gem}
+func NewPipeline(gen JSONGenerator) *Pipeline {
+	return &Pipeline{gen: gen}
 }
 
 // AnalysisResult is the full output the API returns for one analyze call.
@@ -38,7 +46,7 @@ type ClassifyResult struct {
 
 // Classify picks a block type for the given text.
 func (p *Pipeline) Classify(ctx context.Context, text string) (*ClassifyResult, error) {
-	raw, err := p.gem.GenerateJSON(ctx, classifierSystem, text, classifierSchema, 0.1)
+	raw, err := p.gen.GenerateJSON(ctx, classifierSystem, text, classifierSchema, 0.1)
 	if err != nil {
 		return nil, fmt.Errorf("classify: %w", err)
 	}
@@ -104,7 +112,7 @@ func (p *Pipeline) AnalyzeWith(ctx context.Context, text string, cls *ClassifyRe
 		userPrompt = fmt.Sprintf("TODAY: %s\n\nNOTE:\n%s", time.Now().UTC().Format("2006-01-02"), text)
 	}
 
-	structured, err := p.gem.GenerateJSON(ctx, system, userPrompt, schema, temp)
+	structured, err := p.gen.GenerateJSON(ctx, system, userPrompt, schema, temp)
 	if err != nil {
 		return nil, fmt.Errorf("analyze (%s): %w", cls.Type, err)
 	}
@@ -113,6 +121,6 @@ func (p *Pipeline) AnalyzeWith(ctx context.Context, text string, cls *ClassifyRe
 		Type:       cls.Type,
 		Confidence: cls.Confidence,
 		Structured: structured,
-		Model:      p.gem.Model,
+		Model:      p.gen.ModelName(),
 	}, nil
 }

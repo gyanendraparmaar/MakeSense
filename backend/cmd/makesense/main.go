@@ -25,8 +25,16 @@ func main() {
 	}
 	defer store.Close()
 
-	gem := llm.NewGeminiClient(cfg.GeminiAPIKey, cfg.GeminiModel)
-	pipeline := llm.NewPipeline(gem)
+	gen, err := llm.NewGenerator(llm.ProviderConfig{
+		Provider: cfg.LLMProvider,
+		APIKey:   cfg.LLMAPIKey,
+		Model:    cfg.LLMModel,
+		BaseURL:  cfg.LLMBaseURL,
+	})
+	if err != nil {
+		log.Fatalf("llm provider: %v", err)
+	}
+	pipeline := llm.NewPipeline(gen)
 
 	srv := server.New(cfg, store, pipeline)
 	httpServer := &http.Server{
@@ -52,7 +60,7 @@ func main() {
 		close(idleConnsClosed)
 	}()
 
-	log.Printf("makesense listening on :%s (model=%s, db=%s)", cfg.Port, cfg.GeminiModel, cfg.DBPath)
+	log.Printf("makesense listening on :%s (provider=%s, model=%s, db=%s)", cfg.Port, cfg.LLMProvider, cfg.LLMModel, cfg.DBPath)
 	if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("listen: %v", err)
 	}

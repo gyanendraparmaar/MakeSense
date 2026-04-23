@@ -10,6 +10,8 @@ backend/makesense
 backend/makesense.db
 backend/*.db
 backend/*.db-journal
+backend/*.db-shm
+backend/*.db-wal
 backend/tmp/
 backend/bin/
 backend/dist/
