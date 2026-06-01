@@ -18,12 +18,16 @@ Open [http://localhost:3000](http://localhost:3000). Configure LLM keys in `back
 
 ## Docs
 
-| File | What it covers |
-|------|----------------|
-| [`FREELLMAPI.md`](FREELLMAPI.md) | FreeLLMAPI proxy setup and provider keys |
-| [`smart-notepad-plan.md`](smart-notepad-plan.md) | Product and engineering plan |
-| [`DEPLOY.md`](DEPLOY.md) | Deployment (Cloud Run, Vercel) |
-| [`tests/README.md`](tests/README.md) | Evaluation test suite |
+
+
+
+| File                                             | What it covers                           |
+| ------------------------------------------------ | ---------------------------------------- |
+| `[FREELLMAPI.md](FREELLMAPI.md)`                 | FreeLLMAPI proxy setup and provider keys |
+| `[smart-notepad-plan.md](smart-notepad-plan.md)` | Product and engineering plan             |
+| `[DEPLOY.md](DEPLOY.md)`                         | Deployment (Cloud Run, Vercel)           |
+| `[tests/README.md](tests/README.md)`             | Evaluation test suite                    |
+
 
 ## License
 
