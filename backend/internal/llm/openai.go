@@ -78,26 +78,56 @@ type oaiResp struct {
 // content from the first choice. The schema is injected into the system
 // prompt because not every provider supports a structured `json_schema`
 // response format; every major provider does support `json_object`.
+//
+// Weaker models routed via FreeLLMAPI "auto" sometimes reply with prose before
+// the JSON object, or ignore json_object mode entirely. We extract embedded
+// JSON when possible and retry once with a stricter prompt before failing.
 func (c *OpenAICompatibleClient) GenerateJSON(ctx context.Context, system, user string, schema json.RawMessage, temperature float64) (json.RawMessage, error) {
 	if c.APIKey == "" && !strings.Contains(c.BaseURL, "localhost") && !strings.Contains(c.BaseURL, "127.0.0.1") {
 		return nil, errors.New("openai-compatible: API key not set")
 	}
 
-	sys := system
-	if len(schema) > 0 {
-		sys = system + "\n\nReturn a single JSON object that conforms exactly to this JSON Schema:\n" +
-			string(schema) +
-			"\n\nRespond with JSON only — no markdown fences, no commentary, no trailing text."
-	} else if !strings.Contains(strings.ToLower(system), "json") {
-		sys = system + "\n\nReturn JSON only."
+	sys := augmentSystemForJSON(system, schema)
+
+	text, err := c.chatCompletion(ctx, sys, user, temperature)
+	if err != nil {
+		return nil, err
+	}
+	if parsed, ok := parseModelJSON(text); ok {
+		return parsed, nil
 	}
 
+	// One retry — common with small free-tier models behind auto routing.
+	retryUser := user + "\n\nYour previous answer was not valid JSON. Reply with ONLY one raw JSON object — no explanation, no markdown fences, no text before or after."
+	text, err = c.chatCompletion(ctx, sys, retryUser, 0)
+	if err != nil {
+		return nil, err
+	}
+	if parsed, ok := parseModelJSON(text); ok {
+		return parsed, nil
+	}
+	return nil, fmt.Errorf("openai-compatible: model returned non-JSON after retry (text: %s)", truncate(text, 300))
+}
+
+func augmentSystemForJSON(system string, schema json.RawMessage) string {
+	if len(schema) > 0 {
+		return system + "\n\nReturn a single JSON object that conforms exactly to this JSON Schema:\n" +
+			string(schema) +
+			"\n\nRespond with JSON only — no markdown fences, no commentary, no trailing text."
+	}
+	if !strings.Contains(strings.ToLower(system), "json") {
+		return system + "\n\nReturn JSON only."
+	}
+	return system
+}
+
+func (c *OpenAICompatibleClient) chatCompletion(ctx context.Context, system, user string, temperature float64) (string, error) {
 	body := oaiReq{
 		Model:       c.Model,
 		Temperature: temperature,
 		MaxTokens:   2048,
 		Messages: []oaiMessage{
-			{Role: "system", Content: sys},
+			{Role: "system", Content: system},
 			{Role: "user", Content: user},
 		},
 		ResponseFormat: &oaiResponseFormat{Type: "json_object"},
@@ -105,12 +135,12 @@ func (c *OpenAICompatibleClient) GenerateJSON(ctx context.Context, system, user 
 
 	raw, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL+"/chat/completions", bytes.NewReader(raw))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if c.APIKey != "" {
@@ -119,36 +149,116 @@ func (c *OpenAICompatibleClient) GenerateJSON(ctx context.Context, system, user 
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	respRaw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+
+	if resp.StatusCode >= 400 {
+		ct := resp.Header.Get("Content-Type")
+		if strings.Contains(ct, "application/json") {
+			var parsed oaiResp
+			if jerr := json.Unmarshal(respRaw, &parsed); jerr == nil && parsed.Error != nil {
+				return "", fmt.Errorf("openai-compatible: http %d: %s: %s", resp.StatusCode, parsed.Error.Type, parsed.Error.Message)
+			}
+		}
+		hint := ""
+		if resp.StatusCode == http.StatusTooManyRequests {
+			hint = " (rate limited — FreeLLMAPI will failover if upstream keys are configured; add keys at http://localhost:3001)"
+		}
+		return "", fmt.Errorf("openai-compatible: http %d%s: %s", resp.StatusCode, hint, truncate(string(respRaw), 300))
 	}
 
 	var parsed oaiResp
 	if err := json.Unmarshal(respRaw, &parsed); err != nil {
-		return nil, fmt.Errorf("openai-compatible: decode response: %w (body: %s)", err, truncate(string(respRaw), 500))
+		return "", fmt.Errorf("openai-compatible: decode response: %w (body: %s)", err, truncate(string(respRaw), 500))
 	}
 	if parsed.Error != nil {
-		return nil, fmt.Errorf("openai-compatible: %s: %s", parsed.Error.Type, parsed.Error.Message)
-	}
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("openai-compatible: http %d: %s", resp.StatusCode, truncate(string(respRaw), 300))
+		return "", fmt.Errorf("openai-compatible: %s: %s", parsed.Error.Type, parsed.Error.Message)
 	}
 	if len(parsed.Choices) == 0 {
-		return nil, fmt.Errorf("openai-compatible: empty response (status=%d body=%s)", resp.StatusCode, truncate(string(respRaw), 300))
+		return "", fmt.Errorf("openai-compatible: empty response (status=%d body=%s)", resp.StatusCode, truncate(string(respRaw), 300))
 	}
 
-	text := stripMarkdownFence(strings.TrimSpace(parsed.Choices[0].Message.Content))
+	return strings.TrimSpace(parsed.Choices[0].Message.Content), nil
+}
 
+// parseModelJSON accepts raw JSON, fenced ```json blocks, or prose with an
+// embedded {...} object (common when weaker auto-routed models narrate first).
+func parseModelJSON(text string) (json.RawMessage, bool) {
+	text = stripMarkdownFence(strings.TrimSpace(text))
+	if text == "" {
+		return nil, false
+	}
+	if j, ok := tryJSON(text); ok {
+		return j, true
+	}
+	if j, ok := extractJSONObject(text); ok {
+		return j, true
+	}
+	return nil, false
+}
+
+func tryJSON(s string) (json.RawMessage, bool) {
 	var sanity any
-	if err := json.Unmarshal([]byte(text), &sanity); err != nil {
-		return nil, fmt.Errorf("openai-compatible: model returned non-JSON: %w (text: %s)", err, truncate(text, 300))
+	if err := json.Unmarshal([]byte(s), &sanity); err != nil {
+		return nil, false
 	}
-	return json.RawMessage(text), nil
+	return json.RawMessage(s), true
+}
+
+func extractJSONObject(s string) (json.RawMessage, bool) {
+	for i := 0; i < len(s); i++ {
+		if s[i] != '{' {
+			continue
+		}
+		if end, ok := matchingBraceEnd(s, i); ok {
+			if j, ok := tryJSON(s[i : end+1]); ok {
+				return j, true
+			}
+		}
+	}
+	return nil, false
+}
+
+func matchingBraceEnd(s string, start int) (int, bool) {
+	if start >= len(s) || s[start] != '{' {
+		return -1, false
+	}
+	depth := 0
+	inString := false
+	escape := false
+	for i := start; i < len(s); i++ {
+		c := s[i]
+		if escape {
+			escape = false
+			continue
+		}
+		if inString {
+			if c == '\\' {
+				escape = true
+			} else if c == '"' {
+				inString = false
+			}
+			continue
+		}
+		switch c {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i, true
+			}
+		}
+	}
+	return -1, false
 }
 
 // stripMarkdownFence removes ```json … ``` wrappers some models add even when

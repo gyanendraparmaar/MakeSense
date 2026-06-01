@@ -107,7 +107,7 @@ export default function HomePage() {
         <section className="min-h-0 border-r border-[var(--border)] bg-[var(--panel)]">
           <Editor onChange={handleChange} />
         </section>
-        <section className="min-h-0 bg-[var(--bg)]">
+        <section className="min-h-0 h-full bg-[var(--bg)]">
           <AnalysisPane
             status={status}
             type={type}

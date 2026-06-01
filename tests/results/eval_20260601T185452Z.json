@@ -1,0 +1,1341 @@
+{
+  "timestamp": "20260601T185452Z",
+  "api": "http://localhost:8080/api/analyze",
+  "total": 30,
+  "summary": {
+    "pass": 20,
+    "error": 2,
+    "partial": 5,
+    "fail": 3
+  },
+  "avg_score": 3.9,
+  "avg_latency_ms": 14660,
+  "results": [
+    {
+      "id": "exp-001",
+      "name": "Clean comma-separated list",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 1,
+      "model": "auto",
+      "latency_ms": 25,
+      "notes": [],
+      "response": {
+        "cached": true,
+        "confidence": 1,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Food",
+              "merchant": "Swiggy",
+              "amount": 450,
+              "note": ""
+            },
+            {
+              "date": "",
+              "category": "Transport",
+              "merchant": "Petrol",
+              "amount": 1200,
+              "note": ""
+            },
+            {
+              "date": "",
+              "category": "Entertainment",
+              "merchant": "Netflix",
+              "amount": 649,
+              "note": ""
+            }
+          ],
+          "grand_total": 2299,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-002",
+      "name": "Prose-style single expense",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 0.95,
+      "model": "auto",
+      "latency_ms": 29201,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.95,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Transport",
+              "merchant": "Indian Oil",
+              "amount": 100,
+              "note": "on the way to office"
+            }
+          ],
+          "grand_total": 100,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-003",
+      "name": "Multi-line receipt-style",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 1,
+      "model": "auto",
+      "latency_ms": 46745,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 1,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Shopping",
+              "merchant": "Amazon",
+              "amount": 899,
+              "note": "wireless mouse"
+            },
+            {
+              "date": "",
+              "category": "Groceries",
+              "merchant": "DMart",
+              "amount": 2340,
+              "note": ""
+            },
+            {
+              "date": "",
+              "category": "Transport",
+              "merchant": "Uber",
+              "amount": 650,
+              "note": "to airport"
+            }
+          ],
+          "grand_total": 3889,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-004",
+      "name": "Explicit USD currency",
+      "category": "expenses",
+      "status": "error",
+      "classification_score": 0.0,
+      "extraction_score": 0.0,
+      "insight_score": 0.0,
+      "overall_score": 0.0,
+      "expected_type": "expenses",
+      "actual_type": null,
+      "confidence": null,
+      "model": null,
+      "latency_ms": 70022,
+      "notes": [
+        "API error: analyze (expenses): Post \"http://localhost:3001/v1/chat/completions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+      ],
+      "response": null,
+      "error": "analyze (expenses): Post \"http://localhost:3001/v1/chat/completions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+    },
+    {
+      "id": "exp-005",
+      "name": "Ambiguous date format",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 1,
+      "model": "auto",
+      "latency_ms": 28952,
+      "notes": [
+        "Expected behavior: Dates may be ambiguous DD/MM vs MM/DD \u2014 should flag or pick consistently"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 1,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "2024-06-04",
+              "category": "Food",
+              "merchant": "",
+              "amount": 350,
+              "note": "lunch"
+            },
+            {
+              "date": "2024-06-06",
+              "category": "Transport",
+              "merchant": "",
+              "amount": 200,
+              "note": "cab"
+            }
+          ],
+          "grand_total": 550,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-006",
+      "name": "Relative date yesterday",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 3744,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "2024-07-25",
+              "category": "Food",
+              "merchant": "Social",
+              "amount": 1800,
+              "note": "dinner"
+            },
+            {
+              "date": "2024-07-25",
+              "category": "Entertainment",
+              "merchant": "",
+              "amount": 600,
+              "note": "movie tickets"
+            }
+          ],
+          "grand_total": 2400,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-007",
+      "name": "Large expense list (10 items)",
+      "category": "expenses",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 1,
+      "model": "auto",
+      "latency_ms": 4883,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 1,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "2024-03-18",
+              "category": "Food",
+              "merchant": "",
+              "amount": 120,
+              "note": "Mon coffee"
+            },
+            {
+              "date": "2024-03-19",
+              "category": "Food",
+              "merchant": "",
+              "amount": 280,
+              "note": "Tue lunch"
+            },
+            {
+              "date": "2024-03-20",
+              "category": "Transport",
+              "merchant": "",
+              "amount": 80,
+              "note": "Wed metro"
+            },
+            {
+              "date": "2024-03-21",
+              "category": "Food",
+              "merchant": "",
+              "amount": 650,
+              "note": "Thu dinner"
+            },
+            {
+              "date": "2024-03-22",
+              "category": "Food",
+              "merchant": "",
+              "amount": 90,
+              "note": "Fri snacks"
+            },
+            {
+              "date": "2024-03-23",
+              "category": "Groceries",
+              "merchant": "",
+              "amount": 1100,
+              "note": "Sat groceries"
+            },
+            {
+              "date": "2024-03-24",
+              "category": "Food",
+              "merchant": "",
+              "amount": 450,
+              "note": "Sun brunch"
+            },
+            {
+              "date": "",
+              "category": "Entertainment",
+              "merchant": "Netflix",
+              "amount": 649,
+              "note": ""
+            },
+            {
+              "date": "",
+              "category": "Entertainment",
+              "merchant": "Spotify",
+              "amount": 119,
+              "note": ""
+            },
+            {
+              "date": "",
+              "category": "Health",
+              "merchant": "Gym",
+              "amount": 2000,
+              "note": ""
+            }
+          ],
+          "grand_total": 5838,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "exp-008",
+      "name": "Income mixed with expense",
+      "category": "expenses",
+      "status": "partial",
+      "classification_score": 1.0,
+      "extraction_score": 0.5,
+      "insight_score": 0.8,
+      "overall_score": 3.8,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 18560,
+      "notes": [
+        "Should extract expenses; income handling is out of scope for v0",
+        "Expected behavior: Should extract expenses; income handling is out of scope for v0"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "category": "Other",
+              "amount": 85000,
+              "note": "Got salary"
+            },
+            {
+              "category": "Bills",
+              "amount": 25000,
+              "note": "Paid rent"
+            },
+            {
+              "category": "Bills",
+              "amount": 3200,
+              "note": "Paid electricity"
+            }
+          ],
+          "grand_total": 113200,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "lang-001",
+      "name": "Hinglish expenses",
+      "category": "language",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 17926,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Transport",
+              "merchant": "",
+              "amount": 300,
+              "note": "Petrol"
+            },
+            {
+              "date": "",
+              "category": "Food",
+              "merchant": "Swiggy",
+              "amount": 450,
+              "note": "Swiggy order"
+            },
+            {
+              "date": "",
+              "category": "Food",
+              "merchant": "",
+              "amount": 30,
+              "note": "chai"
+            }
+          ],
+          "grand_total": 780,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "lang-002",
+      "name": "Hindi numerals mixed",
+      "category": "language",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "expenses",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2347,
+      "notes": [
+        "Expected behavior: Devanagari numerals are a hard edge case"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Transport",
+              "merchant": "",
+              "amount": 500,
+              "note": "\u092a\u0947\u091f\u094d\u0930\u094b\u0932 \u092d\u0930\u093e\u092f\u093e"
+            },
+            {
+              "date": "",
+              "category": "Food",
+              "merchant": "",
+              "amount": 200,
+              "note": "samosa"
+            }
+          ],
+          "grand_total": 700,
+          "flags": []
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-001",
+      "name": "Bullet list",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.9,
+      "overall_score": 4.8,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 1,
+      "model": "auto",
+      "latency_ms": 4,
+      "notes": [],
+      "response": {
+        "cached": true,
+        "confidence": 1,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "Call dentist",
+              "priority": "medium"
+            },
+            {
+              "task": "Buy milk",
+              "priority": "medium"
+            },
+            {
+              "task": "Finish report",
+              "priority": "medium",
+              "due": "2026-06-05"
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-002",
+      "name": "Numbered list with priorities",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.9,
+      "overall_score": 4.8,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 4772,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "fix prod bug",
+              "due": "",
+              "priority": "high",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "Review PR from Alex",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "organize desk",
+              "due": "",
+              "priority": "low",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-003",
+      "name": "Relative dates",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2260,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "submit taxes",
+              "due": "2026-06-02",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "team offsite prep",
+              "due": "2026-06-08",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "fix prod bug",
+              "due": "",
+              "priority": "high",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-004",
+      "name": "Completed tasks marked",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2197,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "buy groceries",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": true
+            },
+            {
+              "task": "send invoice",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": true
+            },
+            {
+              "task": "call landlord about lease",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-005",
+      "name": "Task dependencies",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.8,
+      "overall_score": 4.7,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2073,
+      "notes": [
+        "Expected behavior: Should capture depends_on chain if possible"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "get approval from manager",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "submit expense report",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "get approval from manager",
+              "done": false
+            },
+            {
+              "task": "book travel",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "submit expense report",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "todo-006",
+      "name": "Prose-style errands",
+      "category": "todo",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.9,
+      "overall_score": 4.8,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2035,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "pick up dry cleaning",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "water the plants",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "look into car insurance quotes",
+              "due": "2026-06-06",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "gen-001",
+      "name": "Personal journal",
+      "category": "generic",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "generic",
+      "actual_type": "generic",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 14048,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "summary": "The user felt overwhelmed and is unsure about the roadmap after a meeting, considering a break this weekend.",
+          "themes": [
+            "Overwhelmed",
+            "Meeting",
+            "Roadmap",
+            "Break"
+          ],
+          "questions": [
+            "What is causing the uncertainty about the roadmap?",
+            "What kind of break is the user considering?"
+          ],
+          "action_candidates": [
+            "Take a break this weekend",
+            "Clarify the roadmap"
+          ]
+        },
+        "type": "generic"
+      },
+      "error": null
+    },
+    {
+      "id": "gen-002",
+      "name": "Meeting notes",
+      "category": "generic",
+      "status": "fail",
+      "classification_score": 0.0,
+      "extraction_score": 0.0,
+      "insight_score": 1.0,
+      "overall_score": 1.5,
+      "expected_type": "generic",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 5755,
+      "notes": [
+        "Misclassified: expected generic, got todo",
+        "Missing summary",
+        "Expected behavior: Ideal future type: meeting_notes with owners/deadlines"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "Plan Q2",
+              "priority": "medium"
+            },
+            {
+              "task": "Migrate API",
+              "due": "2026-03-15",
+              "priority": "high"
+            },
+            {
+              "task": "Approve budget",
+              "due": "2026-03-15",
+              "priority": "medium"
+            },
+            {
+              "task": "Assess vendor delay risk on auth module",
+              "priority": "high"
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "gen-003",
+      "name": "Research brainstorm",
+      "category": "generic",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "generic",
+      "actual_type": "generic",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 6829,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "summary": "The blog post will compare LangGraph with custom DAG orchestrators and discuss relevant research, including an AOP paper from Tsinghua, and provide a cost routing table for model sizes.",
+          "themes": [
+            "LangGraph",
+            "DAG orchestrators",
+            "AOP paper",
+            "cost routing",
+            "model sizes"
+          ],
+          "questions": [],
+          "action_candidates": [
+            "Research AOP paper from Tsinghua",
+            "Create cost routing table",
+            "Write blog post comparing LangGraph and custom DAG orchestrators"
+          ]
+        },
+        "type": "generic"
+      },
+      "error": null
+    },
+    {
+      "id": "gen-004",
+      "name": "Short thought fragment",
+      "category": "generic",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "generic",
+      "actual_type": "generic",
+      "confidence": 0.8,
+      "model": "auto",
+      "latency_ms": 2085,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.8,
+        "model": "auto",
+        "structured": {
+          "summary": "Segmenting notes before classifying them may be beneficial",
+          "themes": [
+            "note segmentation",
+            "classification"
+          ],
+          "questions": [
+            "How would segmenting notes improve classification?",
+            "What methods could be used for note segmentation?"
+          ],
+          "action_candidates": [
+            "Research note segmentation techniques",
+            "Experiment with different segmentation methods"
+          ]
+        },
+        "type": "generic"
+      },
+      "error": null
+    },
+    {
+      "id": "mix-001",
+      "name": "Expenses + todos in one note",
+      "category": "mixed",
+      "status": "partial",
+      "classification_score": 0.5,
+      "extraction_score": 0.5,
+      "insight_score": 0.8,
+      "overall_score": 2.9,
+      "expected_type": "mixed",
+      "actual_type": "todo",
+      "confidence": 0.8,
+      "model": "auto",
+      "latency_ms": 4879,
+      "notes": [
+        "Mixed content classified as 'todo' \u2014 v0 single-type limitation",
+        "v0 picks dominant type only \u2014 should ideally detect BOTH blocks",
+        "Expected behavior: v0 picks dominant type only \u2014 should ideally detect BOTH blocks"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.8,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "call mom",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            },
+            {
+              "task": "book flight to Delhi",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "mix-002",
+      "name": "Shopping list that looks like expenses",
+      "category": "mixed",
+      "status": "partial",
+      "classification_score": 0.5,
+      "extraction_score": 0.5,
+      "insight_score": 0.9,
+      "overall_score": 3.1,
+      "expected_type": "mixed",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 3252,
+      "notes": [
+        "Mixed content classified as 'expenses' \u2014 v0 single-type limitation",
+        "Planned spending vs actual \u2014 ambiguous intent",
+        "Flags raised: ['Total budget exceeded by 10']",
+        "Expected behavior: Planned spending vs actual \u2014 ambiguous intent"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [
+            {
+              "date": "",
+              "category": "Groceries",
+              "merchant": "",
+              "amount": 60,
+              "note": "milk"
+            },
+            {
+              "date": "",
+              "category": "Groceries",
+              "merchant": "",
+              "amount": 40,
+              "note": "bread"
+            },
+            {
+              "date": "",
+              "category": "Groceries",
+              "merchant": "",
+              "amount": 90,
+              "note": "eggs"
+            }
+          ],
+          "grand_total": 190,
+          "flags": [
+            "Total budget exceeded by 10"
+          ]
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "mix-003",
+      "name": "Trip planning mashup",
+      "category": "mixed",
+      "status": "partial",
+      "classification_score": 0.5,
+      "extraction_score": 0.5,
+      "insight_score": 0.9,
+      "overall_score": 3.1,
+      "expected_type": "mixed",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 36141,
+      "notes": [
+        "Mixed content classified as 'todo' \u2014 v0 single-type limitation",
+        "Rich multi-block content \u2014 stress test for segmentation",
+        "Expected behavior: Rich multi-block content \u2014 stress test for segmentation"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "Book flights",
+              "due": "2026-12-20",
+              "priority": "medium",
+              "done": false
+            },
+            {
+              "task": "Book hotel",
+              "due": "2026-12-20",
+              "priority": "medium",
+              "done": false
+            },
+            {
+              "task": "Get leave approved",
+              "due": "2026-12-20",
+              "priority": "medium",
+              "done": false
+            },
+            {
+              "task": "Pack sunscreen",
+              "due": "2026-12-20",
+              "priority": "medium",
+              "done": false
+            },
+            {
+              "task": "Tell Rohan",
+              "due": "2026-12-20",
+              "priority": "medium",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "size-001",
+      "name": "Tiny input (3 words)",
+      "category": "size",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 0.9,
+      "overall_score": 4.8,
+      "expected_type": "todo",
+      "actual_type": "todo",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 37437,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "buy milk",
+              "due": "2026-06-02",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "size-002",
+      "name": "Medium journal (~150 words)",
+      "category": "size",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "generic",
+      "actual_type": "generic",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 2079,
+      "notes": [],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "summary": "The current approach to classifying user notes using a single classifier is flawed, especially for mixed notes. A potential solution is to implement a segmentation pass to classify each chunk of the note independently.",
+          "themes": [
+            "note classification",
+            "segmentation",
+            "mixed notes",
+            "product plan",
+            "classifier limitations"
+          ],
+          "questions": [
+            "How to effectively segment user notes?",
+            "What are the implications of dominant type classification on mixed notes?"
+          ],
+          "action_candidates": [
+            "Test the current classifier with real-world mixed notes",
+            "Explore and implement a segmentation pass for note classification"
+          ]
+        },
+        "type": "generic"
+      },
+      "error": null
+    },
+    {
+      "id": "edge-001",
+      "name": "Negation \u2014 not a todo",
+      "category": "edge",
+      "status": "fail",
+      "classification_score": 0.7,
+      "extraction_score": 0.5,
+      "insight_score": 0.2,
+      "overall_score": 2.4,
+      "expected_type": "generic",
+      "actual_type": "todo",
+      "confidence": 0.8,
+      "model": "auto",
+      "latency_ms": 1830,
+      "notes": [
+        "Acceptable alternate: expected generic, got todo",
+        "Should NOT extract 'buy milk' as active task",
+        "Expected behavior: Should NOT extract 'buy milk' as active task"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.8,
+        "model": "auto",
+        "structured": {
+          "items": []
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "edge-002",
+      "name": "Sarcastic expense",
+      "category": "edge",
+      "status": "error",
+      "classification_score": 0.0,
+      "extraction_score": 0.0,
+      "insight_score": 0.0,
+      "overall_score": 0.0,
+      "expected_type": "expenses",
+      "actual_type": null,
+      "confidence": null,
+      "model": null,
+      "latency_ms": 60011,
+      "notes": [
+        "API error: classify: Post \"http://localhost:3001/v1/chat/completions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+      ],
+      "response": null,
+      "error": "classify: Post \"http://localhost:3001/v1/chat/completions\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+    },
+    {
+      "id": "edge-003",
+      "name": "Code snippet in note",
+      "category": "edge",
+      "status": "partial",
+      "classification_score": 0.5,
+      "extraction_score": 0.5,
+      "insight_score": 0.8,
+      "overall_score": 2.9,
+      "expected_type": "mixed",
+      "actual_type": "todo",
+      "confidence": 0.8,
+      "model": "auto",
+      "latency_ms": 27807,
+      "notes": [
+        "Mixed content classified as 'todo' \u2014 v0 single-type limitation",
+        "Code + todo + expense \u2014 very mixed",
+        "Expected behavior: Code + todo + expense \u2014 very mixed"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.8,
+        "model": "auto",
+        "structured": {
+          "items": [
+            {
+              "task": "refactor the pipeline",
+              "due": "",
+              "priority": "medium",
+              "depends_on": "",
+              "done": false
+            }
+          ]
+        },
+        "type": "todo"
+      },
+      "error": null
+    },
+    {
+      "id": "edge-004",
+      "name": "Question-only input",
+      "category": "edge",
+      "status": "fail",
+      "classification_score": 0.0,
+      "extraction_score": 0.5,
+      "insight_score": 0.2,
+      "overall_score": 1.2,
+      "expected_type": "generic",
+      "actual_type": "expenses",
+      "confidence": 0.9,
+      "model": "auto",
+      "latency_ms": 1908,
+      "notes": [
+        "Misclassified: expected generic, got expenses",
+        "Query about data, not a note \u2014 should summarize not invent expenses",
+        "Flags raised: ['no expense data provided']",
+        "No expense items extracted",
+        "Expected behavior: Query about data, not a note \u2014 should summarize not invent expenses"
+      ],
+      "response": {
+        "cached": false,
+        "confidence": 0.9,
+        "model": "auto",
+        "structured": {
+          "currency": "INR",
+          "items": [],
+          "grand_total": 0,
+          "flags": [
+            "no expense data provided"
+          ]
+        },
+        "type": "expenses"
+      },
+      "error": null
+    },
+    {
+      "id": "edge-005",
+      "name": "Empty-ish whitespace",
+      "category": "edge",
+      "status": "pass",
+      "classification_score": 1.0,
+      "extraction_score": 1.0,
+      "insight_score": 1.0,
+      "overall_score": 5.0,
+      "expected_type": "error",
+      "actual_type": null,
+      "confidence": null,
+      "model": null,
+      "latency_ms": 2,
+      "notes": [
+        "Correctly returned HTTP 400"
+      ],
+      "response": null,
+      "error": null
+    }
+  ]
+}

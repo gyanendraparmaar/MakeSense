@@ -1,25 +1,59 @@
-# Optional: one-command local dev with the backend in a container.
-# Most of the time you'll run `go run` directly, but this is handy when you
-# want to test the exact container image that deploys to Cloud Run.
+# Local dev: MakeSense backend + FreeLLMAPI proxy.
 #
 # Usage:
-#   docker compose up --build
+#   cp backend/.env.example backend/.env   # set FREELLMAPI_API_KEY
+#   cd freellmapi && cp .env.example .env && openssl rand -hex 32  # → ENCRYPTION_KEY
+#   cd .. && docker compose up -d --build
 #   curl http://localhost:8080/health
+#   open http://localhost:3001   # FreeLLMAPI dashboard — add provider keys
 
 services:
+  freellmapi:
+    image: ghcr.io/tashfeenahmed/freellmapi:latest
+    container_name: makesense-freellmapi
+    env_file:
+      - ./freellmapi/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
+    ports:
+      - "${FREELLMAPI_HOST_BIND:-127.0.0.1}:3001:3001"
+    volumes:
+      - freellmapi_data:/app/server/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/ping').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1));"
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
   backend:
     build: ./backend
     container_name: makesense-backend
     ports:
       - "8080:8080"
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+      - LLM_PROVIDER=${LLM_PROVIDER:-freellmapi}
+      - FREELLMAPI_API_KEY=${FREELLMAPI_API_KEY}
+      - FREELLMAPI_BASE_URL=http://freellmapi:3001/v1
+      - FREELLMAPI_MODEL=${FREELLMAPI_MODEL:-auto}
       - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
       - DB_PATH=/data/makesense.db
     volumes:
       - makesense_data:/data
+    depends_on:
+      freellmapi:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
+  freellmapi_data:
   makesense_data:

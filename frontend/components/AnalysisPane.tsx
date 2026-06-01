@@ -3,6 +3,7 @@
 import { ExpensesView } from "./analyzers/ExpensesView";
 import { TodoView } from "./analyzers/TodoView";
 import { GenericView } from "./analyzers/GenericView";
+import { AnalysisLoading } from "./AnalysisLoading";
 import type {
   AnalysisResult,
   BlockType,
@@ -24,8 +25,18 @@ export function AnalysisPane(props: Props) {
   return (
     <div className="h-full flex flex-col">
       <Header {...props} />
-      <div className="flex-1 overflow-y-auto px-6 py-5">
-        <Body {...props} />
+      <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
+        <div
+          className={
+            props.status === "idle" ||
+            props.status === "classifying" ||
+            props.status === "analyzing"
+              ? "min-h-full flex flex-col"
+              : undefined
+          }
+        >
+          <Body {...props} />
+        </div>
       </div>
     </div>
   );
@@ -85,7 +96,7 @@ function labelFor(t: BlockType) {
   }
 }
 
-function Body({ status, result, errorMessage }: Props) {
+function Body({ status, type, result, errorMessage }: Props) {
   if (status === "idle") {
     return (
       <EmptyState>
@@ -102,7 +113,12 @@ function Body({ status, result, errorMessage }: Props) {
     );
   }
   if (status === "classifying" || status === "analyzing") {
-    return <Skeleton />;
+    return (
+      <AnalysisLoading
+        phase={status}
+        type={status === "analyzing" ? type : undefined}
+      />
+    );
   }
   if (!result) return null;
 
@@ -126,13 +142,3 @@ function EmptyState({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Skeleton() {
-  return (
-    <div className="space-y-3 animate-pulse">
-      <div className="h-5 w-40 rounded bg-[var(--panel-2)]" />
-      <div className="h-9 w-56 rounded bg-[var(--panel-2)]" />
-      <div className="h-32 w-full rounded bg-[var(--panel-2)]" />
-      <div className="h-32 w-full rounded bg-[var(--panel-2)]" />
-    </div>
-  );
-}

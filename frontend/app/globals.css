@@ -57,3 +57,11 @@ body {
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: #1d2230; border-radius: 8px; }
 *::-webkit-scrollbar-thumb:hover { background: #2a3142; }
+
+@keyframes shimmer {
+  100% { transform: translateX(200%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.8s ease-in-out infinite;
+}

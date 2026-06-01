@@ -4,6 +4,7 @@
 .env.*.local
 !.env.example
 !.env.local.example
+freellmapi/.env
 
 # === Go ===
 backend/makesense

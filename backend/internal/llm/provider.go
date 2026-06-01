@@ -8,7 +8,7 @@ import (
 // ProviderConfig is the subset of app config the LLM factory needs.
 // Kept separate from config.Config so the llm package doesn't depend on config.
 type ProviderConfig struct {
-	Provider string // "gemini" | "groq" | "openai" | "openrouter" | "ollama" | "openai-compatible"
+	Provider string // "freellmapi" | "gemini" | "groq" | "openai" | "openrouter" | "ollama" | "openai-compatible"
 	APIKey   string
 	Model    string
 	BaseURL  string // only used by openai-compatible providers
@@ -90,6 +90,20 @@ func NewGenerator(cfg ProviderConfig) (JSONGenerator, error) {
 			return nil, fmt.Errorf("openai-compatible: LLM_MODEL not set")
 		}
 		return NewOpenAICompatibleClient(cfg.APIKey, cfg.Model, cfg.BaseURL), nil
+
+	case "freellmapi":
+		base := cfg.BaseURL
+		if base == "" {
+			base = "http://localhost:3001/v1"
+		}
+		if cfg.APIKey == "" {
+			return nil, fmt.Errorf("freellmapi: unified API key not set (set FREELLMAPI_API_KEY)")
+		}
+		model := cfg.Model
+		if model == "" {
+			model = "auto"
+		}
+		return NewOpenAICompatibleClient(cfg.APIKey, model, base), nil
 
 	default:
 		return nil, fmt.Errorf("unknown LLM_PROVIDER: %q", cfg.Provider)

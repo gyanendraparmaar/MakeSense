@@ -14,7 +14,8 @@ type Config struct {
 	AllowedOrigin string
 
 	// LLM provider selection. One of:
-	// "gemini" (default), "groq", "openai", "openrouter", "ollama", "openai-compatible".
+	// "freellmapi" (recommended), "gemini", "groq", "openai", "openrouter",
+	// "ollama", "openai-compatible".
 	LLMProvider string
 	LLMAPIKey   string
 	LLMModel    string
@@ -29,7 +30,7 @@ func Load() Config {
 		Port:          getenv("PORT", "8080"),
 		DBPath:        getenv("DB_PATH", "./makesense.db"),
 		AllowedOrigin: getenv("ALLOWED_ORIGIN", "http://localhost:3000"),
-		LLMProvider:   strings.ToLower(getenv("LLM_PROVIDER", "gemini")),
+		LLMProvider:   strings.ToLower(getenv("LLM_PROVIDER", "freellmapi")),
 		LLMBaseURL:    os.Getenv("LLM_BASE_URL"),
 	}
 
@@ -54,12 +55,27 @@ func Load() Config {
 	case "openai-compatible":
 		cfg.LLMAPIKey = os.Getenv("LLM_API_KEY")
 		cfg.LLMModel = os.Getenv("LLM_MODEL")
+	case "freellmapi":
+		cfg.LLMAPIKey = firstNonEmpty(os.Getenv("FREELLMAPI_API_KEY"), os.Getenv("LLM_API_KEY"))
+		cfg.LLMModel = firstNonEmpty(os.Getenv("FREELLMAPI_MODEL"), os.Getenv("LLM_MODEL"), "auto")
+		if cfg.LLMBaseURL == "" {
+			cfg.LLMBaseURL = getenv("FREELLMAPI_BASE_URL", "http://localhost:3001/v1")
+		}
 	}
 
 	if cfg.LLMAPIKey == "" && cfg.LLMProvider != "ollama" {
 		log.Printf("WARNING: no API key for LLM provider %q — analysis calls will fail", cfg.LLMProvider)
 	}
 	return cfg
+}
+
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func getenv(key, fallback string) string {

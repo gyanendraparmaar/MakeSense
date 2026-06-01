@@ -1,0 +1,295 @@
+{
+  "version": "1.0",
+  "description": "MakeSense.ai evaluation suite — classification, extraction, and insight quality across genres, sizes, and edge cases. Inspired by Checklist (Ribeiro et al.), LMUnit natural-language unit tests, and real-world expense/todo NLP patterns.",
+  "categories": {
+    "expenses": "Spending records, bills, purchases",
+    "todo": "Tasks, reminders, action items",
+    "generic": "Journal, meeting notes, research, prose",
+    "mixed": "Multiple content types in one note",
+    "size": "Input length stress tests",
+    "edge": "Ambiguity, negation, format variation",
+    "language": "Multilingual / Hinglish inputs"
+  },
+  "cases": [
+    {
+      "id": "exp-001",
+      "category": "expenses",
+      "name": "Clean comma-separated list",
+      "input": "Swiggy 450, petrol 1200, Netflix 649",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": {
+        "item_count_min": 3,
+        "grand_total": 2299,
+        "currency": "INR"
+      }
+    },
+    {
+      "id": "exp-002",
+      "category": "expenses",
+      "name": "Prose-style single expense",
+      "input": "Paid 100 for petrol at Indian Oil on the way to office.",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 1, "has_category": "Transport" }
+    },
+    {
+      "id": "exp-003",
+      "category": "expenses",
+      "name": "Multi-line receipt-style",
+      "input": "Amazon - wireless mouse Rs 899\nDMart groceries 2340\nUber to airport 650",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 3, "grand_total": 3889 }
+    },
+    {
+      "id": "exp-004",
+      "category": "expenses",
+      "name": "Explicit USD currency",
+      "input": "AWS bill $47.20, GitHub Pro $4/mo, domain renewal $12",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 2 }
+    },
+    {
+      "id": "exp-005",
+      "category": "expenses",
+      "name": "Ambiguous date format",
+      "input": "04/06 lunch 350\n06/04 cab 200",
+      "expected_type": "expenses",
+      "min_confidence": 0.6,
+      "checks": { "item_count_min": 2, "note": "Dates may be ambiguous DD/MM vs MM/DD — should flag or pick consistently" }
+    },
+    {
+      "id": "exp-006",
+      "category": "expenses",
+      "name": "Relative date yesterday",
+      "input": "Yesterday: dinner at Social 1800, movie tickets 600",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 2 }
+    },
+    {
+      "id": "exp-007",
+      "category": "expenses",
+      "name": "Large expense list (10 items)",
+      "input": "Mon coffee 120\nTue lunch 280\nWed metro 80\nThu dinner 650\nFri snacks 90\nSat groceries 1100\nSun brunch 450\nNetflix 649\nSpotify 119\nGym 2000",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 8, "grand_total_min": 5000 }
+    },
+    {
+      "id": "exp-008",
+      "category": "expenses",
+      "name": "Income mixed with expense",
+      "input": "Got salary 85000. Paid rent 25000 and electricity 3200.",
+      "expected_type": "expenses",
+      "min_confidence": 0.5,
+      "checks": { "note": "Should extract expenses; income handling is out of scope for v0" }
+    },
+    {
+      "id": "lang-001",
+      "category": "language",
+      "name": "Hinglish expenses",
+      "input": "Petrol ke liye 300 pay kiya, Swiggy order 450 UPI se, chai 30 rupees",
+      "expected_type": "expenses",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 2, "grand_total_min": 750 }
+    },
+    {
+      "id": "lang-002",
+      "category": "language",
+      "name": "Hindi numerals mixed",
+      "input": "500 रुपये का पेट्रोल भराया और 200 का samosa",
+      "expected_type": "expenses",
+      "min_confidence": 0.5,
+      "checks": { "item_count_min": 1, "note": "Devanagari numerals are a hard edge case" }
+    },
+    {
+      "id": "todo-001",
+      "category": "todo",
+      "name": "Bullet list",
+      "input": "- Call dentist\n- Buy milk\n- Finish report by Friday",
+      "expected_type": "todo",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 3 }
+    },
+    {
+      "id": "todo-002",
+      "category": "todo",
+      "name": "Numbered list with priorities",
+      "input": "1. URGENT fix prod bug\n2. Review PR from Alex\n3. Low priority: organize desk",
+      "expected_type": "todo",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 3, "has_priority": "high" }
+    },
+    {
+      "id": "todo-003",
+      "category": "todo",
+      "name": "Relative dates",
+      "input": "tomorrow: submit taxes\nnext week: team offsite prep\nurgent: fix prod bug",
+      "expected_type": "todo",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 3, "has_due_dates": true }
+    },
+    {
+      "id": "todo-004",
+      "category": "todo",
+      "name": "Completed tasks marked",
+      "input": "Done: buy groceries\n[x] send invoice\nStill need to call landlord about lease",
+      "expected_type": "todo",
+      "min_confidence": 0.7,
+      "checks": { "item_count_min": 2, "has_done": true }
+    },
+    {
+      "id": "todo-005",
+      "category": "todo",
+      "name": "Task dependencies",
+      "input": "First get approval from manager, then submit expense report, after that book travel",
+      "expected_type": "todo",
+      "min_confidence": 0.6,
+      "checks": { "item_count_min": 2, "note": "Should capture depends_on chain if possible" }
+    },
+    {
+      "id": "todo-006",
+      "category": "todo",
+      "name": "Prose-style errands",
+      "input": "Need to pick up dry cleaning, remember to water the plants, and maybe look into car insurance quotes this weekend.",
+      "expected_type": "todo",
+      "min_confidence": 0.6,
+      "checks": { "item_count_min": 2 }
+    },
+    {
+      "id": "gen-001",
+      "category": "generic",
+      "name": "Personal journal",
+      "input": "Today felt overwhelming. The meeting went okay but I'm not sure about the roadmap. Maybe I need a break this weekend.",
+      "expected_type": "generic",
+      "min_confidence": 0.7,
+      "checks": { "has_summary": true, "themes_min": 2 }
+    },
+    {
+      "id": "gen-002",
+      "category": "generic",
+      "name": "Meeting notes",
+      "input": "Q2 planning - Sarah owns API migration, deadline March 15. Budget approved at 2M. Risk: vendor delay on auth module.",
+      "expected_type": "generic",
+      "min_confidence": 0.6,
+      "checks": { "has_summary": true, "note": "Ideal future type: meeting_notes with owners/deadlines" }
+    },
+    {
+      "id": "gen-003",
+      "category": "generic",
+      "name": "Research brainstorm",
+      "input": "Ideas for the blog post: compare LangGraph vs custom DAG orchestrators, mention AOP paper from Tsinghua, include cost routing table for small vs large models.",
+      "expected_type": "generic",
+      "min_confidence": 0.6,
+      "checks": { "has_summary": true, "themes_min": 2 }
+    },
+    {
+      "id": "gen-004",
+      "category": "generic",
+      "name": "Short thought fragment",
+      "input": "what if we segmented notes before classifying?",
+      "expected_type": "generic",
+      "min_confidence": 0.5,
+      "checks": { "has_summary": true }
+    },
+    {
+      "id": "mix-001",
+      "category": "mixed",
+      "name": "Expenses + todos in one note",
+      "input": "Spent 500 on lunch at Olive. Also need to call mom and book flight to Delhi for next month.",
+      "expected_type": "mixed",
+      "acceptable_types": ["expenses", "todo", "generic"],
+      "min_confidence": 0.4,
+      "checks": { "note": "v0 picks dominant type only — should ideally detect BOTH blocks" }
+    },
+    {
+      "id": "mix-002",
+      "category": "mixed",
+      "name": "Shopping list that looks like expenses",
+      "input": "Buy: milk 60, bread 40, eggs 90. Total budget 200.",
+      "expected_type": "mixed",
+      "acceptable_types": ["expenses", "todo"],
+      "min_confidence": 0.4,
+      "checks": { "note": "Planned spending vs actual — ambiguous intent" }
+    },
+    {
+      "id": "mix-003",
+      "category": "mixed",
+      "name": "Trip planning mashup",
+      "input": "Goa trip Dec 20-25. Book flights (~8000), hotel 15000/night x 4. TODO: get leave approved, pack sunscreen, tell Rohan.",
+      "expected_type": "mixed",
+      "acceptable_types": ["expenses", "todo", "generic"],
+      "min_confidence": 0.4,
+      "checks": { "note": "Rich multi-block content — stress test for segmentation" }
+    },
+    {
+      "id": "size-001",
+      "category": "size",
+      "name": "Tiny input (3 words)",
+      "input": "buy milk tomorrow",
+      "expected_type": "todo",
+      "min_confidence": 0.5,
+      "checks": { "item_count_min": 1 }
+    },
+    {
+      "id": "size-002",
+      "category": "size",
+      "name": "Medium journal (~150 words)",
+      "input": "I've been thinking about how we classify user notes. The current approach sends everything to a single classifier, which works for clean inputs but breaks down when someone mixes a grocery list with their diary entry. Maybe we need a segmentation pass first — split the note into paragraphs or bullet groups, classify each chunk independently, then merge results. That would match what the product plan describes but isn't implemented yet. For now the classifier picks the dominant type, which means mixed notes lose information. I should test this with real inputs from friends who actually use notepads casually.",
+      "expected_type": "generic",
+      "min_confidence": 0.6,
+      "checks": { "has_summary": true }
+    },
+    {
+      "id": "edge-001",
+      "category": "edge",
+      "name": "Negation — not a todo",
+      "input": "Don't need to buy milk. Already have enough.",
+      "expected_type": "generic",
+      "acceptable_types": ["generic", "todo"],
+      "min_confidence": 0.4,
+      "checks": { "note": "Should NOT extract 'buy milk' as active task" }
+    },
+    {
+      "id": "edge-002",
+      "category": "edge",
+      "name": "Sarcastic expense",
+      "input": "Great, another 500 rupees down the drain on 'productivity' apps I'll never open.",
+      "expected_type": "expenses",
+      "acceptable_types": ["expenses", "generic"],
+      "min_confidence": 0.4,
+      "checks": { "note": "Should extract 500 even with sarcastic tone" }
+    },
+    {
+      "id": "edge-003",
+      "category": "edge",
+      "name": "Code snippet in note",
+      "input": "TODO: refactor the pipeline\n\nfunc Classify(text string) {\n  return llm.GenerateJSON(...)\n}\n\nAlso spent 200 on coffee.",
+      "expected_type": "mixed",
+      "acceptable_types": ["todo", "generic", "expenses"],
+      "min_confidence": 0.4,
+      "checks": { "note": "Code + todo + expense — very mixed" }
+    },
+    {
+      "id": "edge-004",
+      "category": "edge",
+      "name": "Question-only input",
+      "input": "How much did I spend on food last month?",
+      "expected_type": "generic",
+      "min_confidence": 0.5,
+      "checks": { "note": "Query about data, not a note — should summarize not invent expenses" }
+    },
+    {
+      "id": "edge-005",
+      "category": "edge",
+      "name": "Empty-ish whitespace",
+      "input": "   ",
+      "expected_type": "error",
+      "min_confidence": 0,
+      "checks": { "expect_http_error": 400 }
+    }
+  ]
+}
