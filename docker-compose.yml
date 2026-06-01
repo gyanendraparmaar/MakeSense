@@ -1,11 +1,12 @@
 # Local dev: MakeSense backend + FreeLLMAPI proxy.
 #
-# Usage:
-#   cp backend/.env.example backend/.env   # set FREELLMAPI_API_KEY
-#   cd freellmapi && cp .env.example .env && openssl rand -hex 32  # → ENCRYPTION_KEY
-#   cd .. && docker compose up -d --build
+# Quick start (from repo root):
+#   cp freellmapi/.env.example freellmapi/.env
+#   # Set ENCRYPTION_KEY in freellmapi/.env (openssl rand -hex 32)
+#   cp backend/.env.example backend/.env   # set FREELLMAPI_API_KEY after dashboard setup
+#   docker compose up -d
 #   curl http://localhost:8080/health
-#   open http://localhost:3001   # FreeLLMAPI dashboard — add provider keys
+#   open http://localhost:3001   # add provider keys, copy unified API key
 
 services:
   freellmapi:
@@ -16,6 +17,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
+      # Dev/personal use on networks with SSL inspection (SELF_SIGNED_CERT_IN_CHAIN)
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
     ports:
       - "${FREELLMAPI_HOST_BIND:-127.0.0.1}:3001:3001"

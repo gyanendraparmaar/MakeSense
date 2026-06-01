@@ -44,7 +44,9 @@ The pain points FreeLLMAPI solves:
 
 ## Repository layout
 
-The upstream repo (also cloned locally at `freellmapi/` in this monorepo) is a TypeScript monorepo:
+The upstream project is a TypeScript monorepo at [github.com/tashfeenahmed/freellmapi](https://github.com/tashfeenahmed/freellmapi). MakeSense does **not** vendor that source — it runs the published Docker image and keeps only config in `freellmapi/` (`.env` + `.env.example`).
+
+Upstream layout (for reference):
 
 ```
 freellmapi/
@@ -162,18 +164,16 @@ LLM_MODEL=auto
 
 ### Step 1 — Start FreeLLMAPI
 
-#### Option A: Docker Compose (recommended)
+#### Option A: Root docker-compose (recommended for MakeSense)
 
-A copy of the upstream repo already lives at `freellmapi/` in this workspace.
+From the MakeSense repo root:
 
 ```bash
-cd freellmapi
-
-# Generate encryption key for at-rest key storage
+cp freellmapi/.env.example freellmapi/.env
 ENCRYPTION_KEY="$(openssl rand -hex 32)"
-printf "ENCRYPTION_KEY=%s\nPORT=3001\n" "$ENCRYPTION_KEY" > .env
+# Add ENCRYPTION_KEY=... to freellmapi/.env
 
-docker compose up -d
+docker compose up -d freellmapi
 ```
 
 Verify it is running:
@@ -185,30 +185,23 @@ docker compose logs -f freellmapi
 
 Open the dashboard: **http://localhost:3001**
 
-> **LAN access:** By default the container binds to `127.0.0.1` only. To reach it from another machine on your network:
->
-> ```bash
-> HOST_BIND=0.0.0.0 docker compose up -d
-> ```
->
-> Only do this on a trusted network — the proxy is single-user and protected only by the unified API key.
+> **LAN access:** Set `FREELLMAPI_HOST_BIND=0.0.0.0` when running `docker compose up`. Only do this on a trusted network — the proxy is single-user and protected only by the unified API key.
 
-#### Option B: Pull pre-built image (no clone needed)
+#### Option B: Pull pre-built image (standalone)
 
 ```bash
 docker pull ghcr.io/tashfeenahmed/freellmapi:latest
-# Use the docker-compose.yml from the repo, or run the image directly with
-# ENCRYPTION_KEY, PORT=3001, and a volume for /app/server/data
+# Run with ENCRYPTION_KEY, PORT=3001, and a volume for /app/server/data
 ```
 
-#### Option C: Local Node.js development
+#### Option C: Hack on FreeLLMAPI itself
+
+Clone and run upstream locally if you need to modify the proxy:
 
 ```bash
+git clone https://github.com/tashfeenahmed/freellmapi.git
 cd freellmapi
-npm install
-cp .env.example .env
-ENCRYPTION_KEY="$(node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))')"
-printf "ENCRYPTION_KEY=%s\nPORT=3001\n" "$ENCRYPTION_KEY" >> .env
+npm install && cp .env.example .env
 npm run dev
 # API on :3001, Vite dashboard on :5173
 ```
@@ -400,43 +393,15 @@ Check response headers:
 
 ### Step 5 (optional) — Run both services with Docker Compose
 
-You can extend the root `docker-compose.yml` to run FreeLLMAPI alongside the MakeSense backend. Example addition:
+The root `docker-compose.yml` already runs FreeLLMAPI and the MakeSense backend together:
 
-```yaml
-services:
-  freellmapi:
-    image: ghcr.io/tashfeenahmed/freellmapi:latest
-    ports:
-      - "127.0.0.1:3001:3001"
-    env_file:
-      - ./freellmapi/.env
-    volumes:
-      - freellmapi_data:/app/server/data
-    restart: unless-stopped
-
-  backend:
-    build: ./backend
-    ports:
-      - "8080:8080"
-    environment:
-      - LLM_PROVIDER=freellmapi
-      - FREELLMAPI_API_KEY=${FREELLMAPI_API_KEY}
-      - FREELLMAPI_BASE_URL=http://freellmapi:3001/v1
-      - FREELLMAPI_MODEL=auto
-      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
-      - DB_PATH=/data/makesense.db
-    volumes:
-      - makesense_data:/data
-    depends_on:
-      - freellmapi
-    restart: unless-stopped
-
-volumes:
-  freellmapi_data:
-  makesense_data:
+```bash
+cp freellmapi/.env.example freellmapi/.env   # set ENCRYPTION_KEY
+cp backend/.env.example backend/.env         # set FREELLMAPI_API_KEY
+docker compose up -d
 ```
 
-When the backend runs inside Docker, use the service name `freellmapi` as the host — not `localhost`.
+When the backend runs inside Docker, use the service name `freellmapi` as the host — not `localhost` (already configured in `docker-compose.yml`).
 
 ---
 
@@ -495,7 +460,7 @@ Rules of thumb: one account per provider, no reselling, don't share your endpoin
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | `openai-compatible: API key not set` | Missing `LLM_API_KEY` in `backend/.env` | Copy unified key from FreeLLMAPI Keys page |
-| Connection refused to `:3001` | FreeLLMAPI not running | `docker compose up -d` in `freellmapi/` |
+| Connection refused to `:3001` | FreeLLMAPI not running | `docker compose up -d freellmapi` from repo root |
 | `http 401` from FreeLLMAPI | Wrong unified key | Regenerate or copy key from dashboard |
 | `http 422 no_vision_model` | Image request, no vision model enabled | Enable a vision-capable model in Fallback Chain |
 | `http 429` after many requests | All keys rate-limited | Wait, add keys, or reorder fallback chain |
@@ -515,13 +480,12 @@ Rules of thumb: one account per provider, no reselling, don't share your endpoin
 | Auth header | `Authorization: Bearer freellmapi-…` |
 | Smart routing model | `LLM_MODEL=auto` |
 | Upstream repo | https://github.com/tashfeenahmed/freellmapi |
-| Local clone in this repo | `freellmapi/` |
+| Local config | `freellmapi/.env` (see `freellmapi/.env.example`) |
 
 ---
 
 ## Further reading
 
-- Upstream README: `freellmapi/README.md`
-- Docker ops: `freellmapi/docker/README.md`
+- Upstream README: https://github.com/tashfeenahmed/freellmapi
 - MakeSense LLM client: `backend/internal/llm/openai.go`
 - MakeSense provider factory: `backend/internal/llm/provider.go`

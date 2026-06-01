@@ -6,28 +6,31 @@ An AI-powered notepad. Type raw text on the left; the right pane renders structu
 
 ## Quick start
 
-```bash
-# Backend
-cd backend && cp .env.example .env && go run ./cmd/makesense
+**Docker (backend + FreeLLMAPI):**
 
-# Frontend
+```bash
+cp freellmapi/.env.example freellmapi/.env   # set ENCRYPTION_KEY
+cp backend/.env.example backend/.env         # set FREELLMAPI_API_KEY after dashboard setup
+docker compose up -d
+```
+
+**Local dev (no Docker):**
+
+```bash
+cd backend && cp .env.example .env && go run ./cmd/makesense
 cd frontend && cp .env.local.example .env.local && npm install && npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Configure LLM keys in `backend/.env` — see `backend/.env.example` and `FREELLMAPI.md` for setup options.
+Open [http://localhost:3000](http://localhost:3000). See `backend/.env.example` and [`FREELLMAPI.md`](FREELLMAPI.md) for LLM setup.
 
 ## Docs
 
-
-
-
-| File                                             | What it covers                           |
-| ------------------------------------------------ | ---------------------------------------- |
-| `[FREELLMAPI.md](FREELLMAPI.md)`                 | FreeLLMAPI proxy setup and provider keys |
-| `[smart-notepad-plan.md](smart-notepad-plan.md)` | Product and engineering plan             |
-| `[DEPLOY.md](DEPLOY.md)`                         | Deployment (Cloud Run, Vercel)           |
-| `[tests/README.md](tests/README.md)`             | Evaluation test suite                    |
-
+| File | What it covers |
+|------|----------------|
+| [`FREELLMAPI.md`](FREELLMAPI.md) | FreeLLMAPI proxy setup and provider keys |
+| [`smart-notepad-plan.md`](smart-notepad-plan.md) | Product and engineering plan |
+| [`DEPLOY.md`](DEPLOY.md) | Deployment (Cloud Run, Vercel) |
+| [`tests/README.md`](tests/README.md) | Evaluation test suite |
 
 ## License
 
